@@ -2,6 +2,7 @@ import  express  from "express";
 import mongoose from 'mongoose';
 import Messages from './dbMessages.js';
 import Pusher from "pusher";
+import cors from "cors";
 //app config
 const app = express();
 const port = process.env.PORT || 9000;
@@ -15,6 +16,8 @@ const pusher = new Pusher({
 
 // middleWare
 app.use(express.json());
+app.use(cors());
+
 //DB config
 const connection_url = 'mongodb+srv://aymen:pFwnT%40Vy_qn!7mj@cluster0.f2envhy.mongodb.net/?retryWrites=true&w=majority';
 mongoose.connect(connection_url,{
@@ -32,8 +35,10 @@ db.once('open',()=>{
         if(change.operationType === 'insert'){
             const messageDetails = change.fullDocument;
             pusher.trigger('messages','inserted',{
-                name:messageDetails.user,
+                name:messageDetails.name,
                 message : messageDetails.message,
+                timestamp : messageDetails.timestamp,
+                received : messageDetails.received
             });
         }else{
             console.log("Error triggering Pusher");
